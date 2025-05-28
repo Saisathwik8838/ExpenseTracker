@@ -1,0 +1,100 @@
+/* Inherit premium look from login.css/dashboard.css with unique colors */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+body {
+  background: linear-gradient(135deg, #2d2a4a, #1c1c1c);
+  font-family: 'Poppins', sans-serif;
+  color: #fff;
+  margin: 0;
+}
+nav {
+  background: #191851;
+  padding: 1rem 2rem;
+  box-shadow: 0 4px 12px rgba(40,40,90,0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+nav h2 {
+  font-weight: 700;
+  color: #f5ba13;
+  margin: 0;
+}
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 2rem;
+  margin: 0;
+}
+nav ul li a {
+  text-decoration: none;
+  color: #fff;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+nav ul li a:hover {
+  background: #f5ba132a;
+}
+.container {
+  max-width: 900px;
+  margin: 2rem auto;
+  background: #232143;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px #0005;
+  padding: 2rem;
+}
+header h1 {
+  color: #f5ba13;
+  margin-bottom: 2rem;
+  text-align: center;
+  font-size: 2rem;
+}
+.input-group {
+  margin-bottom: 1.5rem;
+}
+.input-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #f5ba13;
+  font-weight: 500;
+}
+.input-group input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: none;
+  background: #2c295c;
+  color: #fff;
+  font-size: 1rem;
+}
+button {
+  background: linear-gradient(145deg, #f5ba13, #e6a500);
+  color: #232143;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 2rem;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-top: 1rem;
+  transition: background 0.2s;
+}
+button:hover {
+  background: #f7c948;
+}
+.section {
+  display: none;
+}
+.section.active {
+  display: block;
+}
+#limitsBanner {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f5ba1322;
+  border-radius: 8px;
+  color: #f5ba13;
+  font-weight: 600;
+  text-align: center;
+}
