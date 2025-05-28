@@ -1,5 +1,3 @@
-/* File: frontend/dashboard/dashboard.css */
-
 body {
   margin: 0;
   font-family: 'Poppins', sans-serif;
@@ -22,8 +20,6 @@ nav {
 nav h2 {
   color: #f5ba13;
   margin: 0;
-  font-weight: 700;
-  font-size: 1.75rem;
 }
 
 nav ul {
@@ -52,17 +48,80 @@ nav ul li a:hover {
 
 header h1 {
   text-align: center;
-  font-size: 3rem;
+  font-size: 2.75rem;
   margin-bottom: 1.5rem;
   color: #f5ba13;
-  text-shadow: 2px 2px 15px rgba(245, 186, 19, 0.4);
+  text-shadow: 2px 2px 12px rgba(255, 255, 255, 0.1);
 }
 
 .inputs {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+  gap: 1.5rem;
+}
+
+.step-container {
+  background: #1e1e1e;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+  min-width: 400px;
+  text-align: center;
+}
+
+.step-container h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: #f5ba13;
+  font-size: 1.5rem;
+}
+
+.button-group {
+  display: flex;
   gap: 1rem;
   justify-content: center;
-  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.selection-btn {
+  background: linear-gradient(145deg, #2c2c2c, #1a1a1a);
+  border: 2px solid #333;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #fff;
+  transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 150px;
+}
+
+.selection-btn i {
+  font-size: 2rem;
+}
+
+.income-btn:hover {
+  background: linear-gradient(145deg, #4dff88, #3eaf7c);
+  color: #1a1a1a;
+  transform: translateY(-2px);
+}
+
+.expense-btn:hover {
+  background: linear-gradient(145deg, #ff4d4d, #e04f5f);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.form-group {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
   flex-wrap: wrap;
 }
 
@@ -70,26 +129,33 @@ header h1 {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  min-width: 180px;
+}
+
+.input-group label {
+  color: #f5ba13;
+  font-weight: 500;
+  font-size: 0.9rem;
 }
 
 .input-group input {
   padding: 0.75rem 1.25rem;
   border-radius: 14px;
-  border: 1px solid #2c2c2c;
-  background: rgba(30, 30, 30, 0.85);
+  border: none;
+  background: #2c2c2c;
   color: white;
-  backdrop-filter: blur(6px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  transition: all 0.3s ease;
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.4);
+  transition: background 0.3s;
+  font-size: 1rem;
 }
 
 .input-group input:focus {
   outline: none;
-  border-color: #f5ba13;
-  background: rgba(44, 44, 44, 0.95);
+  background: #3a3a3a;
+  box-shadow: 0 0 0 2px #f5ba13;
 }
 
-button {
+.add-btn {
   background: linear-gradient(145deg, #f5ba13, #e6a500);
   border: none;
   padding: 0.75rem 1.5rem;
@@ -97,54 +163,125 @@ button {
   cursor: pointer;
   font-weight: bold;
   color: #1a1a1a;
-  transition: all 0.3s ease;
-  box-shadow: 0 6px 16px rgba(245, 186, 19, 0.3);
+  transition: all 0.3s;
 }
 
-button:hover {
+.add-btn:hover {
   background: linear-gradient(145deg, #ffc627, #d89e00);
-  transform: translateY(-3px);
+  transform: translateY(-2px);
+}
+
+.back-btn {
+  background: linear-gradient(145deg, #666, #555);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #fff;
+  transition: all 0.3s;
+}
+
+.back-btn:hover {
+  background: linear-gradient(145deg, #777, #666);
+  transform: translateY(-2px);
 }
 
 .summary {
   display: flex;
   justify-content: space-around;
   margin-bottom: 3rem;
-  gap: 1.5rem;
+  gap: 1rem;
   flex-wrap: wrap;
 }
 
 .card {
-  background: rgba(31, 31, 31, 0.9);
-  padding: 1.25rem;
-  border-radius: 18px;
+  background: #1f1f1f;
+  padding: 1rem;
+  border-radius: 16px;
   width: 250px;
   text-align: center;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
-  transition: transform 0.3s ease;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s;
 }
 
 .card:hover {
-  transform: scale(1.04);
+  transform: scale(1.03);
 }
 
 .card i {
-  font-size: 2.4rem;
+  font-size: 2.2rem;
   margin-bottom: 0.5rem;
   color: #f5ba13;
 }
 
 .card h3 {
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
   font-weight: 600;
-  font-size: 1.25rem;
 }
 
-.card p {
-  font-size: 1rem;
-  font-weight: 400;
+/* Recent Entries Section */
+.recent-entries {
+  margin-bottom: 3rem;
+}
+
+.recent-entries h3 {
+  text-align: center;
+  color: #f5ba13;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+.entries-list {
+  max-height: 300px;
+  overflow-y: auto;
+  background: #1e1e1e;
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.entry-item {
+  background: #2c2c2c;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.3s;
+}
+
+.entry-item:hover {
+  background: #3a3a3a;
+}
+
+.entry-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.entry-type {
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.entry-description {
   color: #ccc;
+  font-size: 0.8rem;
+}
+
+.entry-amount {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.income-amount {
+  color: #4dff88;
+}
+
+.expense-amount {
+  color: #ff4d4d;
 }
 
 .charts {
@@ -155,16 +292,22 @@ button:hover {
 
 .chart-wrapper {
   background: linear-gradient(145deg, #202020, #111);
-  border-radius: 16px;
-  padding: 1.5rem;
+  border-radius: 14px;
+  padding: 1rem;
   flex: 1;
   position: relative;
-  transition: transform 0.3s ease;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+  transition: transform 0.3s;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
 }
 
 .chart-wrapper:hover {
-  transform: scale(1.02);
+  transform: scale(1.03);
+}
+
+.chart-wrapper h3 {
+  text-align: center;
+  color: #f5ba13;
+  margin-bottom: 1rem;
 }
 
 canvas {
@@ -172,36 +315,108 @@ canvas {
   height: auto !important;
   max-height: 400px;
   background: radial-gradient(circle at top left, #222, #111);
-  border-radius: 14px;
-  padding: 0.5rem;
+  border-radius: 12px;
 }
 
-.tooltip {
-  position: absolute;
-  background: linear-gradient(to right, #2c2c2c, #1a1a1a);
-  color: #fff;
-  padding: 0.6rem 1rem;
+/* Barcode Styles */
+.barcode-container {
+  display: flex;
+  gap: 15px;
+  padding: 20px;
+  background: #1a1a1a;
   border-radius: 8px;
-  font-size: 0.9rem;
-  display: none;
-  z-index: 999;
-  pointer-events: none;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  backdrop-filter: blur(6px);
+  margin-top: 1rem;
+  height: 300px;
+  align-items: flex-end;
+  overflow-x: auto;
 }
 
-@media screen and (max-width: 768px) {
-  nav ul {
-    flex-direction: column;
-    gap: 0.5rem;
-    text-align: right;
+.barcode-bar {
+  position: relative;
+  width: 50px;
+  height: 100%;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.barcode-expense {
+  background: #ff4d4d;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  border-radius: 4px 4px 0 0;
+}
+
+.barcode-income {
+  background: #4dff88;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 4px 4px 0 0;
+}
+
+.barcode-bar:hover .barcode-income {
+  opacity: 1;
+}
+
+.barcode-tooltip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #222;
+  color: #fff;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  border-radius: 6px;
+  white-space: nowrap;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 100;
+  text-align: center;
+}
+
+.barcode-bar:hover .barcode-tooltip {
+  opacity: 1;
+}
+
+.no-data {
+  color: #666;
+  text-align: center;
+  font-style: italic;
+  padding: 2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .step-container {
+    min-width: 300px;
+    padding: 1.5rem;
   }
+  
+  .form-group {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .input-group {
+    min-width: 250px;
+  }
+  
   .summary {
     flex-direction: column;
     align-items: center;
   }
-  .charts {
-    gap: 1.5rem;
+  
+  .card {
+    width: 100%;
+    max-width: 300px;
   }
 }
