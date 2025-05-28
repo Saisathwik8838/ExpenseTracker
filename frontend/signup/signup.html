@@ -18,63 +18,35 @@
           <label for="name">Full Name</label>
           <span class="underline"></span>
         </div>
-        
         <div class="input-group">
           <input type="email" id="email" required>
           <label for="email">Email</label>
           <span class="underline"></span>
         </div>
-        
         <div class="input-group">
           <input type="date" id="birthdate" required>
-          <label for="birthdate">Date of Birth</label>
+          <label for="birthdate" class="date-label">Date of Birth</label>
           <span class="underline"></span>
         </div>
-        
-        <div class="age-verification">
-          <h4>Age Verification</h4>
-          <div class="checkbox-group">
-            <input type="checkbox" id="ageConfirm" required>
-            <label for="ageConfirm">I confirm that I am 13 years or older</label>
-          </div>
+        <div class="input-group" id="guardianEmailGroup" style="display: none;">
+          <input type="email" id="guardianEmail">
+          <label for="guardianEmail">Guardian's Email</label>
+          <span class="underline"></span>
         </div>
-        
-        <div class="guardian-section" id="guardianSection">
-          <h4>Guardian Information (Required for users under 18)</h4>
-          <div class="input-group">
-            <input type="text" id="guardianName">
-            <label for="guardianName">Guardian's Full Name</label>
-            <span class="underline"></span>
-          </div>
-          <div class="input-group">
-            <input type="email" id="guardianEmail">
-            <label for="guardianEmail">Guardian's Email</label>
-            <span class="underline"></span>
-          </div>
-          <div class="input-group">
-            <input type="tel" id="guardianPhone">
-            <label for="guardianPhone">Guardian's Phone Number</label>
-            <span class="underline"></span>
-          </div>
-        </div>
-        
         <div class="input-group">
           <input type="password" id="password" required>
           <label for="password">Password</label>
           <span class="underline"></span>
         </div>
-        
         <div class="input-group">
           <input type="password" id="confirmPassword" required>
           <label for="confirmPassword">Confirm Password</label>
           <span class="underline"></span>
         </div>
-        
         <div class="checkbox-group">
-          <input type="checkbox" id="termsAgree" required>
-          <label for="termsAgree">I agree to the Terms & Conditions and Privacy Policy</label>
+          <input type="checkbox" id="terms" required>
+          <label for="terms" class="checkbox-label">I agree to the Terms and Conditions</label>
         </div>
-        
         <button type="submit">Sign Up</button>
       </form>
       <div class="extra-links">

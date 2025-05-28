@@ -10,51 +10,33 @@
 </head>
 <body>
   <nav>
-    <div class="nav-left">
-      <h2>MyFinance</h2>
-    </div>
-    <ul class="nav-menu">
-      <li><a href="#" class="nav-link active" data-section="dashboard">
-        <i class="fas fa-chart-line"></i> Dashboard
-      </a></li>
-      <li><a href="#" class="nav-link" data-section="reports">
-        <i class="fas fa-file-alt"></i> Reports
-      </a></li>
-      <li><a href="#" class="nav-link" data-section="settings">
-        <i class="fas fa-cog"></i> Settings
-      </a></li>
-    </ul>
-    <div class="nav-right">
-      <div class="profile-dropdown">
-        <button class="profile-btn" id="profileBtn">
+    <h2>MyFinance</h2>
+    <ul>
+      <li><a href="#" onclick="showSection('dashboard')">Dashboard</a></li>
+      <li><a href="#" onclick="showSection('reports')">Reports</a></li>
+      <li><a href="#" onclick="showSection('settings')">Settings</a></li>
+      <li class="profile-dropdown">
+        <a href="#" class="profile-btn">
           <i class="fas fa-user-circle"></i>
-          <span id="userName">John Doe</span>
+          <span id="userName">User</span>
           <i class="fas fa-chevron-down"></i>
-        </button>
-        <div class="dropdown-menu" id="dropdownMenu">
-          <a href="#" id="profileLink">
-            <i class="fas fa-user"></i> My Profile
-          </a>
-          <a href="#" id="accountSettingsLink">
-            <i class="fas fa-cog"></i> Account Settings
-          </a>
-          <hr>
-          <a href="#" id="logoutBtn">
-            <i class="fas fa-sign-out-alt"></i> Logout
-          </a>
+        </a>
+        <div class="dropdown-content">
+          <a href="#" onclick="showSection('profile')"><i class="fas fa-user"></i> Profile</a>
+          <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
-      </div>
-    </div>
+      </li>
+    </ul>
   </nav>
 
   <div class="container">
     <!-- Dashboard Section -->
-    <section id="dashboard-section" class="content-section active">
+    <section id="dashboard-section" class="section active">
       <header>
         <h1>Expense Tracker</h1>
       </header>
 
-      <div class="inputs">
+      <section class="inputs">
         <div class="input-group">
           <label for="income">Income</label>
           <input type="number" id="income" placeholder="Enter your income" />
@@ -66,21 +48,19 @@
         <div class="input-group">
           <label for="category">Category</label>
           <select id="category">
-            <option value="">Select Category</option>
-            <option value="food">Food & Dining</option>
-            <option value="transport">Transportation</option>
-            <option value="shopping">Shopping</option>
-            <option value="entertainment">Entertainment</option>
-            <option value="bills">Bills & Utilities</option>
-            <option value="healthcare">Healthcare</option>
-            <option value="education">Education</option>
-            <option value="other">Other</option>
+            <option value="Food">Food</option>
+            <option value="Transportation">Transportation</option>
+            <option value="Entertainment">Entertainment</option>
+            <option value="Shopping">Shopping</option>
+            <option value="Bills">Bills</option>
+            <option value="Healthcare">Healthcare</option>
+            <option value="Other">Other</option>
           </select>
         </div>
         <button onclick="addData()">Add Entry</button>
-      </div>
+      </section>
 
-      <div class="summary">
+      <section class="summary">
         <div class="card">
           <i class="fas fa-wallet"></i>
           <div>
@@ -102,136 +82,81 @@
             <p id="balance">$0</p>
           </div>
         </div>
-        <div class="card">
-          <i class="fas fa-calendar-month"></i>
-          <div>
-            <h3>This Month</h3>
-            <p id="monthlyExpense">$0</p>
-          </div>
-        </div>
-      </div>
+      </section>
 
-      <div class="charts">
-        <div class="chart-wrapper bar-wrapper">
+      <section class="charts">
+        <div class="chart-wrapper">
           <h3>Income vs Expenses</h3>
           <canvas id="barChart"></canvas>
-          <div class="tooltip" id="barTooltip"></div>
         </div>
         <div class="chart-wrapper">
-          <h3>Spending Trends</h3>
+          <h3>Trend Over Time</h3>
           <canvas id="lineChart"></canvas>
         </div>
         <div class="chart-wrapper">
           <h3>Expense Categories</h3>
           <canvas id="pieChart"></canvas>
         </div>
-      </div>
+      </section>
     </section>
 
     <!-- Reports Section -->
-    <section id="reports-section" class="content-section">
+    <section id="reports-section" class="section">
       <header>
         <h1>Financial Reports</h1>
       </header>
       
-      <div class="reports-filters">
-        <div class="filter-group">
-          <label for="reportType">Report Type</label>
-          <select id="reportType">
-            <option value="monthly">Monthly Report</option>
-            <option value="weekly">Weekly Report</option>
-            <option value="yearly">Yearly Report</option>
-            <option value="custom">Custom Range</option>
+      <div class="report-controls">
+        <div class="input-group">
+          <label for="reportPeriod">Period</label>
+          <select id="reportPeriod" onchange="generateReport()">
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+            <option value="year">This Year</option>
+            <option value="all">All Time</option>
           </select>
         </div>
-        <div class="filter-group">
-          <label for="startDate">Start Date</label>
-          <input type="date" id="startDate">
-        </div>
-        <div class="filter-group">
-          <label for="endDate">End Date</label>
-          <input type="date" id="endDate">
-        </div>
-        <button onclick="generateReport()">Generate Report</button>
+        <button onclick="exportReport()">Export PDF</button>
       </div>
 
-      <div class="report-summary">
-        <div class="report-card">
-          <h3>Total Income</h3>
-          <p id="reportIncome">$0</p>
+      <div id="reportContent">
+        <div class="report-summary">
+          <h3>Summary</h3>
+          <div class="report-cards">
+            <div class="report-card">
+              <h4>Total Income</h4>
+              <p id="reportIncome">$0</p>
+            </div>
+            <div class="report-card">
+              <h4>Total Expenses</h4>
+              <p id="reportExpenses">$0</p>
+            </div>
+            <div class="report-card">
+              <h4>Net Savings</h4>
+              <p id="reportSavings">$0</p>
+            </div>
+          </div>
         </div>
-        <div class="report-card">
-          <h3>Total Expenses</h3>
-          <p id="reportExpenses">$0</p>
-        </div>
-        <div class="report-card">
-          <h3>Net Savings</h3>
-          <p id="reportSavings">$0</p>
-        </div>
-        <div class="report-card">
-          <h3>Savings Rate</h3>
-          <p id="savingsRate">0%</p>
-        </div>
-      </div>
 
-      <div class="report-details">
-        <div class="transactions-table">
+        <div class="transactions-list">
           <h3>Recent Transactions</h3>
-          <table id="transactionsTable">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Type</th>
-                <th>Category</th>
-                <th>Amount</th>
-              </tr>
-            </thead>
-            <tbody id="transactionsBody">
-              <!-- Transactions will be populated here -->
-            </tbody>
-          </table>
+          <div id="transactionsList">
+            <p>No transactions yet.</p>
+          </div>
         </div>
       </div>
     </section>
 
     <!-- Settings Section -->
-    <section id="settings-section" class="content-section">
+    <section id="settings-section" class="section">
       <header>
         <h1>Settings</h1>
       </header>
-
-      <div class="settings-tabs">
-        <button class="tab-btn active" data-tab="profile">Profile</button>
-        <button class="tab-btn" data-tab="preferences">Preferences</button>
-        <button class="tab-btn" data-tab="security">Security</button>
-        <button class="tab-btn" data-tab="notifications">Notifications</button>
-      </div>
-
-      <!-- Profile Tab -->
-      <div class="tab-content active" id="profile-tab">
-        <div class="settings-card">
-          <h3>Personal Information</h3>
-          <div class="form-group">
-            <label for="profileName">Full Name</label>
-            <input type="text" id="profileName" placeholder="Enter your name">
-          </div>
-          <div class="form-group">
-            <label for="profileEmail">Email</label>
-            <input type="email" id="profileEmail" placeholder="Enter your email">
-          </div>
-          <div class="form-group">
-            <label for="profilePhone">Phone Number</label>
-            <input type="tel" id="profilePhone" placeholder="Enter your phone">
-          </div>
-          <button onclick="updateProfile()">Update Profile</button>
-        </div>
-      </div>
-
-      <!-- Preferences Tab -->
-      <div class="tab-content" id="preferences-tab">
-        <div class="settings-card">
-          <h3>Display Preferences</h3>
-          <div class="form-group">
+      
+      <div class="settings-content">
+        <div class="settings-group">
+          <h3>Account Settings</h3>
+          <div class="setting-item">
             <label for="currency">Currency</label>
             <select id="currency">
               <option value="USD">USD ($)</option>
@@ -240,63 +165,64 @@
               <option value="INR">INR (₹)</option>
             </select>
           </div>
-          <div class="form-group">
-            <label for="theme">Theme</label>
-            <select id="theme">
-              <option value="dark">Dark Theme</option>
-              <option value="light">Light Theme</option>
-              <option value="auto">Auto (System)</option>
+          <div class="setting-item">
+            <label for="language">Language</label>
+            <select id="language">
+              <option value="en">English</option>
+              <option value="es">Spanish</option>
+              <option value="fr">French</option>
+              <option value="de">German</option>
             </select>
           </div>
-          <div class="form-group">
-            <label for="dateFormat">Date Format</label>
-            <select id="dateFormat">
-              <option value="MM/DD/YYYY">MM/DD/YYYY</option>
-              <option value="DD/MM/YYYY">DD/MM/YYYY</option>
-              <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-            </select>
-          </div>
-          <button onclick="updatePreferences()">Save Preferences</button>
         </div>
-      </div>
 
-      <!-- Security Tab -->
-      <div class="tab-content" id="security-tab">
-        <div class="settings-card">
-          <h3>Change Password</h3>
-          <div class="form-group">
-            <label for="currentPassword">Current Password</label>
-            <input type="password" id="currentPassword" placeholder="Enter current password">
-          </div>
-          <div class="form-group">
-            <label for="newPassword">New Password</label>
-            <input type="password" id="newPassword" placeholder="Enter new password">
-          </div>
-          <div class="form-group">
-            <label for="confirmNewPassword">Confirm New Password</label>
-            <input type="password" id="confirmNewPassword" placeholder="Confirm new password">
-          </div>
-          <button onclick="changePassword()">Change Password</button>
-        </div>
-      </div>
-
-      <!-- Notifications Tab -->
-      <div class="tab-content" id="notifications-tab">
-        <div class="settings-card">
-          <h3>Notification Preferences</h3>
-          <div class="checkbox-setting">
+        <div class="settings-group">
+          <h3>Notifications</h3>
+          <div class="setting-item checkbox-setting">
             <input type="checkbox" id="emailNotifications" checked>
             <label for="emailNotifications">Email Notifications</label>
           </div>
-          <div class="checkbox-setting">
+          <div class="setting-item checkbox-setting">
             <input type="checkbox" id="budgetAlerts" checked>
             <label for="budgetAlerts">Budget Alerts</label>
           </div>
-          <div class="checkbox-setting">
-            <input type="checkbox" id="monthlyReports">
-            <label for="monthlyReports">Monthly Reports</label>
+        </div>
+
+        <div class="settings-group">
+          <h3>Data Management</h3>
+          <button class="danger-btn" onclick="clearAllData()">Clear All Data</button>
+          <button onclick="exportData()">Export Data</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Profile Section -->
+    <section id="profile-section" class="section">
+      <header>
+        <h1>Profile</h1>
+      </header>
+      
+      <div class="profile-content">
+        <div class="profile-info">
+          <div class="profile-avatar">
+            <i class="fas fa-user-circle"></i>
           </div>
-          <button onclick="updateNotifications()">Save Settings</button>
+          <h3 id="profileName">User Name</h3>
+          <p id="profileEmail">user@example.com</p>
+          <p id="profileAge"></p>
+        </div>
+
+        <div class="profile-settings">
+          <h3>Update Profile</h3>
+          <div class="input-group">
+            <label for="updateName">Full Name</label>
+            <input type="text" id="updateName" placeholder="Enter your name">
+          </div>
+          <div class="input-group">
+            <label for="updateEmail">Email</label>
+            <input type="email" id="updateEmail" placeholder="Enter your email">
+          </div>
+          <button onclick="updateProfile()">Update Profile</button>
         </div>
       </div>
     </section>

@@ -1,3 +1,4 @@
+/* Enhanced signup styles */
 * {
   margin: 0;
   padding: 0;
@@ -6,12 +7,11 @@
 }
 
 body {
-  min-height: 100vh;
+  height: 100vh;
   background: linear-gradient(135deg, #141e30, #243b55);
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
 }
 
 .signup-wrapper {
@@ -19,8 +19,7 @@ body {
   padding: 40px 30px;
   border-radius: 12px;
   box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
-  width: 100%;
-  max-width: 450px;
+  width: 400px;
   color: white;
   animation: fadeIn 1s ease-in-out;
   max-height: 90vh;
@@ -81,6 +80,12 @@ body {
   transition: 0.3s ease;
 }
 
+.input-group label.date-label {
+  top: -8px;
+  font-size: 12px;
+  color: #4fc3f7;
+}
+
 .input-group input:focus ~ label,
 .input-group input:valid ~ label {
   top: -8px;
@@ -100,70 +105,22 @@ body {
   width: 100%;
 }
 
-.age-verification {
-  background: rgba(76, 195, 247, 0.1);
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  border-left: 4px solid #4fc3f7;
-}
-
-.age-verification h4 {
-  color: #4fc3f7;
-  margin-bottom: 10px;
-  font-size: 16px;
-}
-
-.guardian-section {
-  background: rgba(255, 193, 7, 0.1);
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  border-left: 4px solid #ffc107;
-  display: none;
-}
-
-.guardian-section h4 {
-  color: #ffc107;
-  margin-bottom: 15px;
-  font-size: 16px;
-}
-
-.guardian-section.show {
-  display: block;
-  animation: slideDown 0.3s ease;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .checkbox-group {
+  margin-bottom: 20px;
   display: flex;
-  align-items: flex-start;
-  margin-bottom: 15px;
+  align-items: center;
   gap: 10px;
 }
 
 .checkbox-group input[type="checkbox"] {
-  margin-top: 2px;
-  transform: scale(1.2);
+  width: auto;
   accent-color: #4fc3f7;
 }
 
-.checkbox-group label {
-  position: static;
+.checkbox-label {
   color: #ccc;
-  cursor: pointer;
   font-size: 14px;
-  line-height: 1.4;
+  cursor: pointer;
 }
 
 button {
@@ -176,7 +133,6 @@ button {
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.3s ease;
-  margin-top: 10px;
 }
 
 button:hover {
@@ -184,7 +140,7 @@ button:hover {
 }
 
 button:disabled {
-  background-color: #555;
+  background-color: #666;
   cursor: not-allowed;
 }
 
@@ -208,28 +164,15 @@ button:disabled {
   color: #ff6b6b;
   font-size: 12px;
   margin-top: 5px;
-  display: none;
 }
 
-.error-message.show {
-  display: block;
-}
-
-/* Scrollbar styling for webkit browsers */
-.signup-wrapper::-webkit-scrollbar {
-  width: 6px;
-}
-
-.signup-wrapper::-webkit-scrollbar-track {
-  background: #2a2a2a;
-  border-radius: 3px;
-}
-
-.signup-wrapper::-webkit-scrollbar-thumb {
-  background: #4fc3f7;
-  border-radius: 3px;
-}
-
-.signup-wrapper::-webkit-scrollbar-thumb:hover {
-  background: #03a9f4;
+.age-warning {
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid #ffc107;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 15px;
+  color: #ffc107;
+  font-size: 14px;
+  text-align: center;
 }

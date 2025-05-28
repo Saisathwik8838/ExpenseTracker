@@ -1,164 +1,129 @@
-// Age verification and guardian section handling
-document.getElementById('birthdate').addEventListener('change', function() {
-  const birthdate = new Date(this.value);
-  const today = new Date();
-  const age = today.getFullYear() - birthdate.getFullYear();
-  
-  // Check if birthday has occurred this year
-  const monthDiff = today.getMonth() - birthdate.getMonth();
-  const dayDiff = today.getDate() - birthdate.getDate();
-  
-  const actualAge = (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) ? age - 1 : age;
-  
-  const guardianSection = document.getElementById('guardianSection');
-  const ageConfirm = document.getElementById('ageConfirm');
-  
-  if (actualAge < 13) {
-    alert('You must be at least 13 years old to create an account.');
-    this.value = '';
-    return;
-  }
-  
-  if (actualAge < 18) {
-    guardianSection.classList.add('show');
-    // Make guardian fields required
-    document.getElementById('guardianName').required = true;
-    document.getElementById('guardianEmail').required = true;
-    document.getElementById('guardianPhone').required = true;
-  } else {
-    guardianSection.classList.remove('show');
-    // Remove required attribute from guardian fields
-    document.getElementById('guardianName').required = false;
-    document.getElementById('guardianEmail').required = false;
-    document.getElementById('guardianPhone').required = false;
-  }
-});
-
-// Form submission handling
 document.getElementById('signupForm').addEventListener('submit', function(e) {
   e.preventDefault();
 
-  // Get form values
   const name = document.getElementById('name').value.trim();
   const email = document.getElementById('email').value.trim();
   const birthdate = document.getElementById('birthdate').value;
-  const password = document.getElementById('password').value;
-  const confirmPassword = document.getElementById('confirmPassword').value;
-  const ageConfirm = document.getElementById('ageConfirm').checked;
-  const termsAgree = document.getElementById('termsAgree').checked;
-  
-  // Guardian info (if applicable)
-  const guardianName = document.getElementById('guardianName').value.trim();
   const guardianEmail = document.getElementById('guardianEmail').value.trim();
-  const guardianPhone = document.getElementById('guardianPhone').value.trim();
+  const password = document.getElementById('password').value.trim();
+  const confirmPassword = document.getElementById('confirmPassword').value.trim();
+  const termsAccepted = document.getElementById('terms').checked;
+
+  // Clear previous error messages
+  clearErrors();
 
   // Validation
   if (!name || !email || !birthdate || !password || !confirmPassword) {
-    alert("Please fill out all required fields.");
+    showError('Please fill out all required fields.');
     return;
   }
 
-  if (!ageConfirm) {
-    alert("Please confirm that you are 13 years or older.");
-    return;
-  }
-
-  if (!termsAgree) {
-    alert("Please agree to the Terms & Conditions.");
+  if (!termsAccepted) {
+    showError('Please accept the Terms and Conditions.');
     return;
   }
 
   if (password !== confirmPassword) {
-    alert("Passwords do not match.");
+    showError('Passwords do not match.');
     return;
   }
 
-  if (password.length < 8) {
-    alert("Password must be at least 8 characters long.");
+  if (password.length < 6) {
+    showError('Password must be at least 6 characters long.');
     return;
   }
 
-  // Check if guardian info is required
-  const birthDate = new Date(birthdate);
-  const today = new Date();
-  const age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
-  const dayDiff = today.getDate() - birthDate.getDate();
-  const actualAge = (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) ? age - 1 : age;
-
-  if (actualAge < 18) {
-    if (!guardianName || !guardianEmail || !guardianPhone) {
-      alert("Guardian information is required for users under 18.");
-      return;
-    }
-    
-    // Validate guardian email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(guardianEmail)) {
-      alert("Please enter a valid guardian email address.");
-      return;
-    }
-  }
-
-  // Validate email format
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    alert("Please enter a valid email address.");
+  const age = calculateAge(birthdate);
+  
+  if (age < 13) {
+    showError('You must be at least 13 years old to create an account.');
     return;
   }
 
-  // Create user object
+  if (age < 18 && !guardianEmail) {
+    showError('Guardian email is required for users under 18.');
+    return;
+  }
+
+  // Store user data (in a real app, this would be sent to a server)
   const userData = {
-    name: name,
-    email: email,
-    birthdate: birthdate,
-    age: actualAge,
-    password: password, // In real app, this would be hashed
-    guardian: actualAge < 18 ? {
-      name: guardianName,
-      email: guardianEmail,
-      phone: guardianPhone
-    } : null,
+    name,
+    email,
+    birthdate,
+    age,
+    guardianEmail: age < 18 ? guardianEmail : null,
+    isMinor: age < 18,
     createdAt: new Date().toISOString()
   };
 
-  // Store in localStorage for now (in real app, send to backend)
-  const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
+  // Simulate saving to localStorage for demo purposes
+  localStorage.setItem('userData', JSON.stringify(userData));
+  localStorage.setItem('isLoggedIn', 'true');
+
+  console.log("Signup attempted with:", userData);
+  alert("Signup successful! Redirecting to dashboard...");
+
+  // Redirect to dashboard
+  window.location.href = "../dashboard/dashboard.html";
+});
+
+// Check age and show/hide guardian email field
+document.getElementById('birthdate').addEventListener('change', function() {
+  const birthdate = this.value;
+  const age = calculateAge(birthdate);
+  const guardianGroup = document.getElementById('guardianEmailGroup');
+  const signupBox = document.querySelector('.signup-box');
   
-  // Check if email already exists
-  if (existingUsers.some(user => user.email === email)) {
-    alert("An account with this email already exists.");
-    return;
+  // Remove existing age warning
+  const existingWarning = document.querySelector('.age-warning');
+  if (existingWarning) {
+    existingWarning.remove();
   }
 
-  existingUsers.push(userData);
-  localStorage.setItem('users', JSON.stringify(existingUsers));
-
-  console.log("Signup successful:", userData);
-  
-  if (actualAge < 18) {
-    alert("Account created successfully! A verification email has been sent to your guardian. Please check your email to complete the registration.");
+  if (age < 18 && age >= 13) {
+    guardianGroup.style.display = 'block';
+    guardianGroup.querySelector('input').required = true;
+    
+    // Show age warning
+    const warning = document.createElement('div');
+    warning.className = 'age-warning';
+    warning.textContent = 'Since you are under 18, we require a guardian\'s email address for account verification.';
+    signupBox.insertBefore(warning, document.getElementById('signupForm'));
   } else {
-    alert("Account created successfully! Please check your email to verify your account.");
+    guardianGroup.style.display = 'none';
+    guardianGroup.querySelector('input').required = false;
   }
-
-  // Redirect to login page
-  window.location.href = "../login/login.html";
 });
 
-// Password strength indicator (optional enhancement)
-document.getElementById('password').addEventListener('input', function() {
-  const password = this.value;
-  const strength = calculatePasswordStrength(password);
-  // You can add visual feedback for password strength here
-});
+function calculateAge(birthdate) {
+  const today = new Date();
+  const birth = new Date(birthdate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDifference = today.getMonth() - birth.getMonth();
+  
+  if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  
+  return age;
+}
 
-function calculatePasswordStrength(password) {
-  let strength = 0;
-  if (password.length >= 8) strength++;
-  if (/[a-z]/.test(password)) strength++;
-  if (/[A-Z]/.test(password)) strength++;
-  if (/[0-9]/.test(password)) strength++;
-  if (/[^A-Za-z0-9]/.test(password)) strength++;
-  return strength;
+function showError(message) {
+  const form = document.getElementById('signupForm');
+  const existingError = document.querySelector('.error-message');
+  
+  if (existingError) {
+    existingError.remove();
+  }
+  
+  const errorDiv = document.createElement('div');
+  errorDiv.className = 'error-message';
+  errorDiv.textContent = message;
+  
+  form.appendChild(errorDiv);
+}
+
+function clearErrors() {
+  const errorMessages = document.querySelectorAll('.error-message');
+  errorMessages.forEach(error => error.remove());
 }

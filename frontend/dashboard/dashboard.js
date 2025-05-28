@@ -1,145 +1,136 @@
+// Enhanced Dashboard JavaScript
 let incomeData = [];
 let expenseData = [];
-let allEntries = []; // Store all entries with details
+let transactions = [];
+let categories = {
+  'Food': 0,
+  'Transportation': 0,
+  'Entertainment': 0,
+  'Shopping': 0,
+  'Bills': 0,
+  'Healthcare': 0,
+  'Other': 0
+};
 
+const incomeInput = document.getElementById("income");
+const expenseInput = document.getElementById("expense");
+const categorySelect = document.getElementById("category");
 const totalIncome = document.getElementById("totalIncome");
 const totalExpense = document.getElementById("totalExpense");
 const balance = document.getElementById("balance");
-const entriesList = document.getElementById("entriesList");
 
-let lineChart, pieChart;
+// Chart instances
+let barChart, lineChart, pieChart;
 
-// Navigation between steps
-function selectType(type) {
-  document.getElementById('step1').style.display = 'none';
-  
-  if (type === 'income') {
-    document.getElementById('incomeForm').style.display = 'block';
-    document.getElementById('incomeSource').focus();
-  } else if (type === 'expense') {
-    document.getElementById('expenseForm').style.display = 'block';
-    document.getElementById('expensePurpose').focus();
-  }
-}
-
-function goBack() {
-  document.getElementById('incomeForm').style.display = 'none';
-  document.getElementById('expenseForm').style.display = 'none';
-  document.getElementById('step1').style.display = 'block';
-  
-  // Clear form inputs
-  clearFormInputs();
-}
-
-function clearFormInputs() {
-  document.getElementById('incomeSource').value = '';
-  document.getElementById('incomeAmount').value = '';
-  document.getElementById('expensePurpose').value = '';
-  document.getElementById('expenseAmount').value = '';
-}
-
-// Add income entry
-function addIncomeEntry() {
-  const source = document.getElementById('incomeSource').value.trim();
-  const amount = parseFloat(document.getElementById('incomeAmount').value);
-
-  if (!source) {
-    alert('Please enter the source of income');
-    return;
-  }
-
-  if (isNaN(amount) || amount <= 0) {
-    alert('Please enter a valid amount');
-    return;
-  }
-
-  // Add to data arrays
-  incomeData.push(amount);
-  
-  // Add to entries with details
-  allEntries.unshift({
-    type: 'income',
-    description: source,
-    amount: amount,
-    date: new Date().toLocaleDateString()
-  });
-
-  // Update UI
+// Initialize dashboard on load
+window.addEventListener('load', function() {
+  checkAuthentication();
+  loadUserData();
+  loadStoredData();
+  updateSummary();
   updateCharts();
-  updateRecentEntries();
+  generateReport();
+});
+
+function checkAuthentication() {
+  const isLoggedIn = localStorage.getItem('isLoggedIn');
   
-  // Show success message and go back
-  showSuccessMessage(`Income of $${amount.toFixed(2)} from ${source} added successfully!`);
-  
-  setTimeout(() => {
-    goBack();
-  }, 1500);
+  if (isLoggedIn !== 'true') {
+    window.location.href = "../login/login.html";
+    return;
+  }
 }
 
-// Add expense entry
-function addExpenseEntry() {
-  const purpose = document.getElementById('expensePurpose').value.trim();
-  const amount = parseFloat(document.getElementById('expenseAmount').value);
-
-  if (!purpose) {
-    alert('Please enter the purpose of expense');
-    return;
-  }
-
-  if (isNaN(amount) || amount <= 0) {
-    alert('Please enter a valid amount');
-    return;
-  }
-
-  // Add to data arrays
-  expenseData.push(amount);
+function loadUserData() {
+  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
   
-  // Add to entries with details
-  allEntries.unshift({
-    type: 'expense',
-    description: purpose,
-    amount: amount,
-    date: new Date().toLocaleDateString()
-  });
+  const userName = userData.name || currentUser.email?.split('@')[0] || 'User';
+  const userEmail = userData.email || currentUser.email || 'user@example.com';
+  
+  // Update navigation
+  document.getElementById('userName').textContent = userName;
+  
+  // Update profile section
+  document.getElementById('profileName').textContent = userName;
+  document.getElementById('profileEmail').textContent = userEmail;
+  
+  if (userData.age) {
+    document.getElementById('profileAge').textContent = `Age: ${userData.age}`;
+  }
+  
+  // Pre-fill profile update form
+  document.getElementById('updateName').value = userName;
+  document.getElementById('updateEmail').value = userEmail;
+}
 
-  // Update UI
+function loadStoredData() {
+  const storedTransactions = localStorage.getItem('transactions');
+  if (storedTransactions) {
+    transactions = JSON.parse(storedTransactions);
+    
+    // Rebuild data arrays from transactions
+    incomeData = [];
+    expenseData = [];
+    categories = {
+      'Food': 0,
+      'Transportation': 0,
+      'Entertainment': 0,
+      'Shopping': 0,
+      'Bills': 0,
+      'Healthcare': 0,
+      'Other': 0
+    };
+    
+    transactions.forEach(transaction => {
+      if (transaction.type === 'income') {
+        incomeData.push(transaction.amount);
+      } else {
+        expenseData.push(transaction.amount);
+        categories[transaction.category] += transaction.amount;
+      }
+    });
+  }
+}
+
+function addData() {
+  const income = parseFloat(incomeInput.value);
+  const expense = parseFloat(expenseInput.value);
+  const category = categorySelect.value;
+  const timestamp = new Date().toISOString();
+
+  if (!isNaN(income) && income > 0) {
+    incomeData.push(income);
+    transactions.push({
+      type: 'income',
+      amount: income,
+      category: 'Income',
+      date: timestamp,
+      id: Date.now() + Math.random()
+    });
+  }
+
+  if (!isNaN(expense) && expense > 0) {
+    expenseData.push(expense);
+    categories[category] += expense;
+    transactions.push({
+      type: 'expense',
+      amount: expense,
+      category: category,
+      date: timestamp,
+      id: Date.now() + Math.random()
+    });
+  }
+
+  // Save to localStorage
+  localStorage.setItem('transactions', JSON.stringify(transactions));
+
+  incomeInput.value = '';
+  expenseInput.value = '';
+
+  updateSummary();
   updateCharts();
-  updateRecentEntries();
-  
-  // Show success message and go back
-  showSuccessMessage(`Expense of $${amount.toFixed(2)} for ${purpose} added successfully!`);
-  
-  setTimeout(() => {
-    goBack();
-  }, 1500);
-}
-
-function showSuccessMessage(message) {
-  // Create and show a temporary success message
-  const messageDiv = document.createElement('div');
-  messageDiv.className = 'success-message';
-  messageDiv.textContent = message;
-  messageDiv.style.cssText = `
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: linear-gradient(145deg, #4dff88, #3eaf7c);
-    color: #1a1a1a;
-    padding: 1rem 2rem;
-    border-radius: 12px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
-    z-index: 1001;
-    font-weight: bold;
-    text-align: center;
-    max-width: 300px;
-  `;
-  
-  document.body.appendChild(messageDiv);
-  
-  setTimeout(() => {
-    document.body.removeChild(messageDiv);
-  }, 1500);
+  generateReport();
 }
 
 function updateSummary() {
@@ -151,85 +142,70 @@ function updateSummary() {
   totalExpense.textContent = `$${expenseTotal.toFixed(2)}`;
   balance.textContent = `$${balanceAmount.toFixed(2)}`;
   
-  // Change balance color based on positive/negative
-  if (balanceAmount >= 0) {
-    balance.style.color = '#4dff88';
+  // Color code the balance
+  if (balanceAmount > 0) {
+    balance.style.color = '#3eaf7c';
+  } else if (balanceAmount < 0) {
+    balance.style.color = '#e04f5f';
   } else {
-    balance.style.color = '#ff4d4d';
-  }
-}
-
-function updateRecentEntries() {
-  if (allEntries.length === 0) {
-    entriesList.innerHTML = '<div class="no-data">No entries yet. Add your first income or expense!</div>';
-    return;
-  }
-
-  const recentEntries = allEntries.slice(0, 5); // Show last 5 entries
-  
-  entriesList.innerHTML = recentEntries.map(entry => `
-    <div class="entry-item">
-      <div class="entry-info">
-        <div class="entry-type">${entry.type.charAt(0).toUpperCase() + entry.type.slice(1)}</div>
-        <div class="entry-description">${entry.description}</div>
-        <div style="font-size: 0.7rem; color: #888;">${entry.date}</div>
-      </div>
-      <div class="entry-amount ${entry.type}-amount">
-        ${entry.type === 'expense' ? '-' : '+'}$${entry.amount.toFixed(2)}
-      </div>
-    </div>
-  `).join('');
-}
-
-function createBarcodeVisualization() {
-  const container = document.getElementById('barcodeContainer');
-  container.innerHTML = '';
-  
-  if (incomeData.length === 0 && expenseData.length === 0) {
-    container.innerHTML = '<div class="no-data">Add income or expense entries to see visualization</div>';
-    return;
-  }
-
-  const containerHeight = container.clientHeight - 40;
-  const maxValue = Math.max(...incomeData, ...expenseData, 10);
-  const entriesCount = Math.max(incomeData.length, expenseData.length);
-  
-  for (let i = 0; i < entriesCount; i++) {
-    const income = incomeData[i] || 0;
-    const expense = expenseData[i] || 0;
-    
-    const expenseHeight = Math.max((expense / maxValue) * containerHeight, 10);
-    const incomeHeight = Math.max((income / maxValue) * containerHeight, 10);
-    
-    const bar = document.createElement('div');
-    bar.className = 'barcode-bar';
-    bar.innerHTML = `
-      <div class="barcode-expense" style="height: ${expenseHeight}px"></div>
-      <div class="barcode-income" style="height: ${incomeHeight}px"></div>
-      <div class="barcode-tooltip">
-        Entry ${i+1}<br>
-        Income: $${income.toFixed(2)}<br>
-        Expense: $${expense.toFixed(2)}
-      </div>
-    `;
-    
-    container.appendChild(bar);
+    balance.style.color = '#ccc';
   }
 }
 
 function updateCharts() {
-  updateSummary();
-  updateRecentEntries();
-  createBarcodeVisualization();
-
   const labels = Array.from({ length: Math.max(incomeData.length, expenseData.length) }, (_, i) => `Entry ${i + 1}`);
   const incomeTotal = incomeData.reduce((a, b) => a + b, 0);
   const expenseTotal = expenseData.reduce((a, b) => a + b, 0);
   const incomeColor = '#3eaf7c';
   const expenseColor = '#e04f5f';
 
-  // Update Line Chart
+  // Destroy existing charts
+  if (barChart) barChart.destroy();
   if (lineChart) lineChart.destroy();
+  if (pieChart) pieChart.destroy();
+
+  // Bar Chart
+  const barCtx = document.getElementById('barChart').getContext('2d');
+  barChart = new Chart(barCtx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Income',
+          data: incomeData,
+          backgroundColor: incomeColor,
+        },
+        {
+          label: 'Expense',
+          data: expenseData,
+          backgroundColor: expenseColor,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          labels: {
+            color: '#fff'
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#fff' },
+          grid: { color: '#333' }
+        },
+        y: {
+          ticks: { color: '#fff' },
+          grid: { color: '#333' }
+        }
+      }
+    }
+  });
+
+  // Line Chart
   const lineCtx = document.getElementById('lineChart').getContext('2d');
   lineChart = new Chart(lineCtx, {
     type: 'line',
@@ -242,11 +218,6 @@ function updateCharts() {
           borderColor: incomeColor,
           backgroundColor: 'transparent',
           tension: 0.4,
-          borderWidth: 3,
-          pointBackgroundColor: incomeColor,
-          pointBorderColor: '#fff',
-          pointBorderWidth: 2,
-          pointRadius: 6
         },
         {
           label: 'Expense',
@@ -254,11 +225,6 @@ function updateCharts() {
           borderColor: expenseColor,
           backgroundColor: 'transparent',
           tension: 0.4,
-          borderWidth: 3,
-          pointBackgroundColor: expenseColor,
-          pointBorderColor: '#fff',
-          pointBorderWidth: 2,
-          pointRadius: 6
         }
       ]
     },
@@ -267,97 +233,216 @@ function updateCharts() {
       plugins: {
         legend: {
           labels: {
-            color: '#fff',
-            font: {
-              size: 14
-            }
+            color: '#fff'
           }
         }
       },
       scales: {
         x: {
-          ticks: {
-            color: '#ccc'
-          },
-          grid: {
-            color: '#333'
-          }
+          ticks: { color: '#fff' },
+          grid: { color: '#333' }
         },
         y: {
-          ticks: {
-            color: '#ccc'
-          },
-          grid: {
-            color: '#333'
-          }
+          ticks: { color: '#fff' },
+          grid: { color: '#333' }
         }
       }
     }
   });
 
-  // Update Pie Chart
-  if (pieChart) pieChart.destroy();
-  const pieCtx = document.getElementById('pieChart').getContext('2d');
-  pieChart = new Chart(pieCtx, {
-    type: 'pie',
-    data: {
-      labels: ['Income', 'Expense'],
-      datasets: [{
-        data: [incomeTotal, expenseTotal],
-        backgroundColor: [incomeColor, expenseColor],
-        hoverOffset: 10,
-        borderWidth: 3,
-        borderColor: '#1a1a1a'
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          labels: {
-            color: '#fff',
-            font: {
-              size: 14
+  // Pie Chart for Categories
+  const pieData = Object.entries(categories)
+    .filter(([category, amount]) => amount > 0)
+    .map(([category, amount]) => ({ category, amount }));
+
+  if (pieData.length > 0) {
+    const pieCtx = document.getElementById('pieChart').getContext('2d');
+    pieChart = new Chart(pieCtx, {
+      type: 'pie',
+      data: {
+        labels: pieData.map(item => item.category),
+        datasets: [{
+          data: pieData.map(item => item.amount),
+          backgroundColor: [
+            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
+            '#9966FF', '#FF9F40', '#FF6384'
+          ],
+          hoverOffset: 10
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            labels: {
+              color: '#fff'
             }
           }
         }
       }
-    }
-  });
+    });
+  }
 }
 
-// Keyboard event listeners
-document.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') {
-    const activeElement = document.activeElement;
-    
-    if (activeElement.id === 'incomeAmount') {
-      addIncomeEntry();
-    } else if (activeElement.id === 'expenseAmount') {
-      addExpenseEntry();
-    }
-  }
+// Section Management
+function showSection(sectionName) {
+  // Hide all sections
+  const sections = document.querySelectorAll('.section');
+  sections.forEach(section => section.classList.remove('active'));
   
-  if (e.key === 'Escape') {
-    goBack();
-  }
-});
+  // Show selected section
+  document.getElementById(`${sectionName}-section`).classList.add('active');
+  
+  // Update navigation active state
+  const navItems = document.querySelectorAll('nav ul li a');
+  navItems.forEach(item => item.classList.remove('active'));
+}
 
-// Initialize with some sample data if empty
-if (incomeData.length === 0 && expenseData.length === 0) {
-  // Add some sample data
-  incomeData = [1200, 1500, 1800];
-  expenseData = [800, 950, 1200];
+// Reports functionality
+function generateReport() {
+  const period = document.getElementById('reportPeriod')?.value || 'all';
+  const now = new Date();
+  let filteredTransactions = transactions;
+
+  // Filter transactions based on period
+  switch(period) {
+    case 'week':
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      filteredTransactions = transactions.filter(t => new Date(t.date) >= weekAgo);
+      break;
+    case 'month':
+      const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+      filteredTransactions = transactions.filter(t => new Date(t.date) >= monthAgo);
+      break;
+    case 'year':
+      const yearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+      filteredTransactions = transactions.filter(t => new Date(t.date) >= yearAgo);
+      break;
+  }
+
+  // Calculate totals
+  const reportIncome = filteredTransactions
+    .filter(t => t.type === 'income')
+    .reduce((sum, t) => sum + t.amount, 0);
   
-  // Add sample entries
-  allEntries = [
-    { type: 'expense', description: 'Groceries', amount: 1200, date: new Date().toLocaleDateString() },
-    { type: 'income', description: 'Freelance Project', amount: 1800, date: new Date().toLocaleDateString() },
-    { type: 'expense', description: 'Rent', amount: 950, date: new Date().toLocaleDateString() },
-    { type: 'income', description: 'Salary', amount: 1500, date: new Date().toLocaleDateString() },
-    { type: 'expense', description: 'Utilities', amount: 800, date: new Date().toLocaleDateString() },
-    { type: 'income', description: 'Side Business', amount: 1200, date: new Date().toLocaleDateString() }
-  ];
+  const reportExpenses = filteredTransactions
+    .filter(t => t.type === 'expense')
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  // Update report display
+  if (document.getElementById('reportIncome')) {
+    document.getElementById('reportIncome').textContent = `$${reportIncome.toFixed(2)}`;
+    document.getElementById('reportExpenses').textContent = `$${reportExpenses.toFixed(2)}`;
+    document.getElementById('reportSavings').textContent = `$${(reportIncome - reportExpenses).toFixed(2)}`;
+  }
+
+  // Update transactions list
+  updateTransactionsList(filteredTransactions);
+}
+
+function updateTransactionsList(transactionList) {
+  const transactionsList = document.getElementById('transactionsList');
+  if (!transactionsList) return;
+
+  if (transactionList.length === 0) {
+    transactionsList.innerHTML = '<p>No transactions for this period.</p>';
+    return;
+  }
+
+  const sortedTransactions = transactionList
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 10); // Show last 10 transactions
+
+  transactionsList.innerHTML = sortedTransactions.map(transaction => `
+    <div class="transaction-item">
+      <div>
+        <span class="transaction-type ${transaction.type}">${transaction.type.toUpperCase()}</span>
+        <span>${transaction.category}</span>
+      </div>
+      <div>
+        <strong>$${transaction.amount.toFixed(2)}</strong>
+        <small>${new Date(transaction.date).toLocaleDateString()}</small>
+      </div>
+    </div>
+  `).join('');
+}
+
+function exportReport() {
+  alert('Export functionality would be implemented with a PDF library in a real application.');
+}
+
+// Settings functionality
+function clearAllData() {
+  if (confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
+    localStorage.removeItem('transactions');
+    incomeData = [];
+    expenseData = [];
+    transactions = [];
+    categories = {
+      'Food': 0,
+      'Transportation': 0,
+      'Entertainment': 0,
+      'Shopping': 0,
+      'Bills': 0,
+      'Healthcare': 0,
+      'Other': 0
+    };
+    
+    updateSummary();
+    updateCharts();
+    generateReport();
+    alert('All data has been cleared.');
+  }
+}
+
+function exportData() {
+  const dataToExport = {
+    transactions,
+    userData: JSON.parse(localStorage.getItem('userData') || '{}'),
+    exportDate: new Date().toISOString()
+  };
   
-  updateCharts();
+  const dataStr = JSON.stringify(dataToExport, null, 2);
+  const dataBlob = new Blob([dataStr], {type: 'application/json'});
+  
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(dataBlob);
+  link.download = 'expense-tracker-data.json';
+  link.click();
+}
+
+// Profile functionality
+function updateProfile() {
+  const newName = document.getElementById('updateName').value.trim();
+  const newEmail = document.getElementById('updateEmail').value.trim();
+  
+  if (!newName || !newEmail) {
+    alert('Please fill in all fields.');
+    return;
+  }
+  
+  // Update stored user data
+  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+  userData.name = newName;
+  userData.email = newEmail;
+  localStorage.setItem('userData', JSON.stringify(userData));
+  
+  // Update current user data
+  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+  currentUser.email = newEmail;
+  localStorage.setItem('currentUser', JSON.stringify(currentUser));
+  
+  // Reload user data
+  loadUserData();
+  
+  alert('Profile updated successfully!');
+}
+
+// Logout functionality
+function logout() {
+  if (confirm('Are you sure you want to logout?')) {
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('currentUser');
+    window.location.href = "../login/login.html";
+  }
 }
