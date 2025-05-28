@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign Up | Expense Tracker</title>
+  <link rel="stylesheet" href="signup.css">
+</head>
+<body>
+
+  <div class="signup-wrapper">
+    <div class="signup-box">
+      <h2>Create Account</h2>
+      <p>Join the Expense Tracker family</p>
+      <form id="signupForm" autocomplete="on">
+        <div class="input-group">
+          <input type="text" id="name" required>
+          <label for="name">Full Name</label>
+          <span class="underline"></span>
+        </div>
+        <div class="input-group">
+          <input type="email" id="email" required>
+          <label for="email">Email</label>
+          <span class="underline"></span>
+        </div>
+        <div class="input-group">
+          <input type="password" id="password" required>
+          <label for="password">Password</label>
+          <span class="underline"></span>
+        </div>
+        <button type="submit">Sign Up</button>
+      </form>
+      <div class="extra-links">
+        <a href="../login/login.html">Already have an account? Login</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="signup.js"></script>
+</body>
+</html>
