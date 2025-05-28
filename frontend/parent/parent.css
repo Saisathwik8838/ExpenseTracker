@@ -1,22 +1,60 @@
 /* Inherit premium look from login.css/dashboard.css with unique colors */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 body {
-  background: linear-gradient(135deg, #2d2a4a, #1c1c1c);
+  background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
+  margin-top: 100px;
+  text-align: center;
+  animation: slideIn 0.8s ease-out;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+.boxes{
+    background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
   font-family: 'Poppins', sans-serif;
   color: #fff;
   margin: 0;
+  background: rgba(31, 31, 31, 0.95);
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  width: 450px;
+  text-align: center;
+  animation: slideIn 0.8s ease-out;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
 }
+p {
+  color: #ccc;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 nav {
-  background: #191851;
+  background: rgba(31, 31, 31, 0.95);
   padding: 1rem 2rem;
-  box-shadow: 0 4px 12px rgba(40,40,90,0.2);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 nav h2 {
   font-weight: 700;
-  color: #f5ba13;
+  color: #141006;
   margin: 0;
 }
 nav ul {
@@ -39,9 +77,9 @@ nav ul li a:hover {
 .container {
   max-width: 900px;
   margin: 2rem auto;
-  background: #232143;
-  border-radius: 18px;
-  box-shadow: 0 8px 32px #0005;
+  background: rgba(31, 31, 31, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
   padding: 2rem;
 }
 header h1 {
@@ -55,33 +93,47 @@ header h1 {
 }
 .input-group label {
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: 8px;
   color: #f5ba13;
-  font-weight: 500;
+  font-weight: 600;
 }
 .input-group input {
+  margin-bottom: 25px;
+  text-align: left;
+}
+.input-group input,
+.input-group select {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 12px 15px;
+  border: 2px solid #333;
   border-radius: 12px;
-  border: none;
-  background: #2c295c;
-  color: #fff;
-  font-size: 1rem;
+  background: rgba(20, 20, 20, 0.8);
+  color: white;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+.input-group input:focus,
+.input-group select:focus {
+  outline: none;
+  border-color: #f5ba13;
+  background: rgba(30, 30, 30, 0.9);
 }
 button {
+  width: 100%;
+  padding: 15px;
   background: linear-gradient(145deg, #f5ba13, #e6a500);
-  color: #232143;
-  font-weight: bold;
   border: none;
-  border-radius: 8px;
-  padding: 0.75rem 2rem;
+  border-radius: 12px;
+  color: #1a1a1a;
+  font-weight: bold;
+  font-size: 16px;
   cursor: pointer;
-  font-size: 1rem;
-  margin-top: 1rem;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 20px rgba(245, 186, 19, 0.3);
 }
 button:hover {
-  background: #f7c948;
+  background: linear-gradient(145deg, #ffc627, #d89e00);
+  transform: translateY(-2px);
 }
 .section {
   display: none;

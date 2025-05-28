@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Guardian Approval</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #1a1a1a;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+    }
+    .box {
+      background: #2a2a2a;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #00ffcc;
+    }
+    button {
+      padding: 10px 20px;
+      margin-top: 20px;
+      background: #00ffcc;
+      border: none;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>Guardian Approval</h1>
+    <p>Approve this student's account registration?</p>
+    <button onclick="approve()">Approve</button>
+    <p id="status"></p>
+  </div>
+
+  <script>
+    function approve() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get("id");
+
+      if (!id) {
+        document.getElementById("status").innerText = "Invalid approval link.";
+        return;
+      }
+
+      const key = `approval_${id}`;
+      const approvalData = localStorage.getItem(key);
+
+      if (!approvalData) {
+        document.getElementById("status").innerText = "Approval session expired or invalid.";
+        return;
+      }
+
+      const updated = JSON.parse(approvalData);
+      updated.approved = true;
+
+      localStorage.setItem(key, JSON.stringify(updated));
+      document.getElementById("status").innerText = "Approval successful. The student can now sign up.";
+    }
+  </script>
+</body>
+</html>
