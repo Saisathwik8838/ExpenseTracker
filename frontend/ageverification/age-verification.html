@@ -272,7 +272,7 @@
             </div>
             
             <div class="control-item">
-                span>Educational Mode Only</span>
+                <span>Educational Mode Only</span>
                 <div class="control-toggle active" onclick="toggleControl(this)" data-control="educational-mode"></div>
             </div>
 
@@ -283,6 +283,16 @@
     </div>
 
     <script>
+        // Global data store
+        window.appData = window.appData || {
+            users: [],
+            parents: [],
+            currentUser: null,
+            currentParent: null,
+            transactions: [],
+            pendingApprovals: []
+        };
+
         // Populate year dropdown
         const currentYear = new Date().getFullYear();
         const yearSelect = document.getElementById('birthYear');
@@ -349,20 +359,26 @@
                 isMinor: age < 18
             };
             
-            // Store in memory (since localStorage is not available)
-            window.ageVerification = verificationData;
+            // Store in global data
+            window.appData.ageVerification = verificationData;
 
             const ageDisplay = document.getElementById('ageDisplay');
             ageDisplay.textContent = `Your age: ${age} years old`;
             ageDisplay.style.display = 'block';
 
+            if (age < 13) {
+                alert('You must be at least 13 years old to use this application.');
+                return;
+            }
+
             if (age < 18) {
                 document.getElementById('minorControls').style.display = 'block';
                 document.querySelector('.verify-btn').style.display = 'none';
             } else {
-                // Adult user - proceed to main application
+                // Adult user - proceed to login/signup
+                alert('Age verification complete! You can now create an account or login.');
                 setTimeout(() => {
-                    window.location.href = '../login/login.html';
+                    window.location.href = './login.html';
                 }, 2000);
             }
         }
@@ -396,17 +412,16 @@
                 parentEmail: parentEmail,
                 controls: controls,
                 setupAt: new Date().toISOString(),
-                minorAge: window.ageVerification.age
+                minorAge: window.appData.ageVerification.age
             };
 
-            window.parentalControls = parentalControlData;
+            window.appData.parentalControls = parentalControlData;
 
-            // Simulate sending email to parent
-            alert(`Parental control setup complete! A verification email has been sent to ${parentEmail}. You can now access the expense tracker with supervision.`);
+            alert(`Parental control setup complete! A verification email has been sent to ${parentEmail}. You can now create an account.`);
             
-            // Redirect to login
+            // Redirect to signup
             setTimeout(() => {
-                window.location.href = '../login/login.html';
+                window.location.href = './signup.html';
             }, 1500);
         }
 
@@ -415,14 +430,19 @@
             return emailRegex.test(email);
         }
 
-        // Check if user has already been verified (for returning users)
+        // Check if user has already been verified
         window.addEventListener('load', function() {
-            if (window.ageVerification) {
-                // User already verified, redirect appropriately
-                if (window.ageVerification.isMinor && !window.parentalControls) {
+            if (window.appData.ageVerification) {
+                const verification = window.appData.ageVerification;
+                if (verification.isMinor && !window.appData.parentalControls) {
+                    document.getElementById('ageDisplay').textContent = `Your age: ${verification.age} years old`;
+                    document.getElementById('ageDisplay').style.display = 'block';
                     document.getElementById('minorControls').style.display = 'block';
+                    document.querySelector('.verify-btn').style.display = 'none';
+                } else if (window.appData.currentUser) {
+                    window.location.href = './dashboard.html';
                 } else {
-                    window.location.href = '../login/login.html';
+                    window.location.href = './login.html';
                 }
             }
         });

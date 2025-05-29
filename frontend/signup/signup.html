@@ -4,12 +4,191 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sign Up | Expense Tracker</title>
-  <link rel="stylesheet" href="signup.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    body {
+      height: 100vh;
+      background: linear-gradient(135deg, #141e30, #243b55);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .signup-wrapper {
+      background: #1a1a1a;
+      padding: 40px 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+      width: 400px;
+      color: white;
+      animation: fadeIn 1s ease-in-out;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    @keyframes fadeIn {
+      from {
+        transform: translateY(30px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .signup-box h2 {
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .signup-box p {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #ccc;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 25px;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 12px 10px;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid #555;
+      color: white;
+      font-size: 16px;
+      outline: none;
+      transition: 0.3s ease;
+    }
+
+    .input-group input[type="date"] {
+      color-scheme: dark;
+    }
+
+    .input-group label {
+      position: absolute;
+      top: 12px;
+      left: 10px;
+      color: #888;
+      pointer-events: none;
+      transition: 0.3s ease;
+    }
+
+    .input-group label.date-label {
+      top: -8px;
+      font-size: 12px;
+      color: #4fc3f7;
+    }
+
+    .input-group input:focus ~ label,
+    .input-group input:valid ~ label {
+      top: -8px;
+      font-size: 12px;
+      color: #4fc3f7;
+    }
+
+    .underline {
+      display: block;
+      height: 2px;
+      width: 0%;
+      background-color: #4fc3f7;
+      transition: 0.4s ease;
+    }
+
+    .input-group input:focus ~ .underline {
+      width: 100%;
+    }
+
+    .checkbox-group {
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: auto;
+      accent-color: #4fc3f7;
+    }
+
+    .checkbox-label {
+      color: #ccc;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #4fc3f7;
+      color: black;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #03a9f4;
+    }
+
+    button:disabled {
+      background-color: #666;
+      cursor: not-allowed;
+    }
+
+    .extra-links {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .extra-links a {
+      color: #aaa;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .extra-links a:hover {
+      color: #fff;
+    }
+
+    .error-message {
+      color: #ff6b6b;
+      font-size: 12px;
+      margin-top: 5px;
+      text-align: center;
+    }
+
+    .age-warning {
+      background: rgba(255, 193, 7, 0.1);
+      border: 1px solid #ffc107;
+      border-radius: 6px;
+      padding: 10px;
+      margin-bottom: 15px;
+      color: #ffc107;
+      font-size: 14px;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
 
   <div class="signup-wrapper">
-    <div class="signup-box">
+    <div class="signup-box signup-container">
       <h2>Create Account</h2>
       <p>Join the Expense Tracker family</p>
       <form id="signupForm" autocomplete="on">
@@ -50,18 +229,191 @@
         <button type="submit">Sign Up</button>
       </form>
       <div class="extra-links">
-        <a href="../login/login.html">Already have an account? Login</a>
+        <a href="./login.html">Already have an account? Login</a>
       </div>
     </div>
   </div>
 
-  <script src="signup.js"></script>
-  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
-<script>
-  (function(){
-    emailjs.init("QhaUnTaIFNC7xqfz0");
-   })();
-</script>
+  <script>
+    // Initialize global data store
+    window.appData = window.appData || {
+      users: [],
+      parents: [],
+      currentUser: null,
+      currentParent: null,
+      transactions: [],
+      pendingApprovals: []
+    };
 
+    document.getElementById('signupForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const birthdate = document.getElementById('birthdate').value;
+      const guardianEmail = document.getElementById('guardianEmail').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const confirmPassword = document.getElementById('confirmPassword').value.trim();
+      const termsAccepted = document.getElementById('terms').checked;
+
+      clearErrors();
+
+      if (!name || !email || !birthdate || !password || !confirmPassword) {
+        showError('Please fill out all required fields.');
+        return;
+      }
+
+      if (!isValidEmail(email)) {
+        showError('Please enter a valid email address.');
+        return;
+      }
+
+      if (!termsAccepted) {
+        showError('Please accept the Terms and Conditions.');
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        showError('Passwords do not match.');
+        return;
+      }
+
+      if (password.length < 6) {
+        showError('Password must be at least 6 characters long.');
+        return;
+      }
+
+      // Check if email already exists
+      const existingUser = window.appData.users.find(user => user.email === email);
+      if (existingUser) {
+        showError('An account with this email already exists.');
+        return;
+      }
+
+      const age = calculateAge(birthdate);
+
+      if (age < 13) {
+        showError('You must be at least 13 years old to create an account.');
+        return;
+      }
+
+      if (age < 18) {
+        if (!guardianEmail) {
+          showError('Guardian email is required for users under 18.');
+          return;
+        }
+        if (email.toLowerCase() === guardianEmail.toLowerCase()) {
+          showError('Guardian email must be different from your own email.');
+          return;
+        }
+      }
+
+      completeSignup(name, email, birthdate, guardianEmail, password, age, age < 18);
+    });
+
+    document.getElementById('birthdate').addEventListener('change', function () {
+      const birthdate = this.value;
+      if (!birthdate) return;
+
+      const age = calculateAge(birthdate);
+      const guardianGroup = document.getElementById('guardianEmailGroup');
+      const signupContainer = document.querySelector('.signup-container');
+
+      const existingWarning = document.querySelector('.age-warning');
+      if (existingWarning) existingWarning.remove();
+
+      if (age < 18 && age >= 13) {
+        guardianGroup.style.display = 'block';
+        guardianGroup.querySelector('input').required = true;
+
+        const warning = document.createElement('div');
+        warning.className = 'age-warning';
+        warning.textContent = 'Since you are under 18, parental verification may be required based on your age verification settings.';
+        signupContainer.insertBefore(warning, document.getElementById('signupForm'));
+      } else {
+        guardianGroup.style.display = 'none';
+        guardianGroup.querySelector('input').required = false;
+      }
+    });
+
+    function completeSignup(name, email, birthdate, guardianEmail, password, age, isMinor) {
+      const userData = {
+        id: Date.now().toString(),
+        name,
+        email,
+        password, // In real app, this would be hashed
+        birthdate,
+        age,
+        guardianEmail: isMinor ? guardianEmail : null,
+        isMinor,
+        createdAt: new Date().toISOString(),
+        isActive: true
+      };
+
+      // Add user to global data store
+      window.appData.users.push(userData);
+      window.appData.currentUser = userData;
+
+      // If user is a minor and has parental controls, create parent account
+      if (isMinor && guardianEmail && window.appData.parentalControls) {
+        const parentData = {
+          id: Date.now().toString() + '_parent',
+          email: guardianEmail,
+          password: 'tempPassword123', // In real app, parent would set this
+          childId: userData.id,
+          controls: window.appData.parentalControls.controls,
+          spendingLimit: 100, // Default limit
+          createdAt: new Date().toISOString()
+        };
+        window.appData.parents.push(parentData);
+      }
+
+      alert("Signup successful! Welcome to Expense Tracker!");
+      
+      // Redirect to dashboard
+      setTimeout(() => {
+        window.location.href = '../dashboard/dashboard.html';
+      }, 1000);
+    }
+
+    function calculateAge(birthdate) {
+      const today = new Date();
+      const birth = new Date(birthdate);
+      let age = today.getFullYear() - birth.getFullYear();
+      const m = today.getMonth() - birth.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+        age--;
+      }
+      return age;
+    }
+
+    function isValidEmail(email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
+    }
+
+    function showError(message) {
+      const form = document.getElementById('signupForm');
+      const existingError = document.querySelector('.error-message');
+      if (existingError) existingError.remove();
+
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'error-message';
+      errorDiv.textContent = message;
+      form.appendChild(errorDiv);
+    }
+
+    function clearErrors() {
+      const errorMessages = document.querySelectorAll('.error-message');
+      errorMessages.forEach(error => error.remove());
+    }
+
+    // Check if user should be redirected
+    window.addEventListener('load', function() {
+      if (window.appData.currentUser) {
+        window.location.href = '../dashboard/dashboard.html';
+        }
+    });
+  </script>
 </body>
 </html>
