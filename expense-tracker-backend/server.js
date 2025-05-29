@@ -1,4 +1,4 @@
-const express = require('express');
+/*const express = require('express');
 const app = express();
 const PORT = 3000;
 
@@ -28,4 +28,4 @@ const User = require('../models/User');
 
 sequelize.sync()
   .then(() => console.log('User table synced'))
-  .catch(console.error);
+  .catch(console.error);*/
