@@ -1,4 +1,4 @@
-// Enhanced Dashboard JavaScript
+// --- Global variables ---
 let incomeData = [];
 let expenseData = [];
 let transactions = [];
@@ -12,6 +12,9 @@ let categories = {
   'Other': 0
 };
 
+let barChart, lineChart, pieChart;
+
+// --- DOM elements ---
 const incomeInput = document.getElementById("income");
 const expenseInput = document.getElementById("expense");
 const categorySelect = document.getElementById("category");
@@ -19,57 +22,47 @@ const totalIncome = document.getElementById("totalIncome");
 const totalExpense = document.getElementById("totalExpense");
 const balance = document.getElementById("balance");
 
-// Chart instances
-let barChart, lineChart, pieChart;
+// --- Initialization without authentication check ---
+window.addEventListener('load', () => {
+  // No authentication check here!
 
-// Initialize dashboard on load
-window.addEventListener('load', function() {
-  checkAuthentication();
   loadUserData();
   loadStoredData();
   updateSummary();
   updateCharts();
   generateReport();
+  setupReportPeriodListener();
+  setupAddDataListener();
+  checkTemporaryAccess();
 });
 
-function checkAuthentication() {
-  const isLoggedIn = localStorage.getItem('isLoggedIn');
-  
-  if (isLoggedIn !== 'true') {
-    window.location.href = "../login/login.html";
-    return;
-  }
-}
-
+// Load user data and update UI
 function loadUserData() {
+  // Try to get userData from localStorage if available, else fallback
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
   const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-  
+
   const userName = userData.name || currentUser.email?.split('@')[0] || 'User';
   const userEmail = userData.email || currentUser.email || 'user@example.com';
-  
-  // Update navigation
+
   document.getElementById('userName').textContent = userName;
-  
-  // Update profile section
   document.getElementById('profileName').textContent = userName;
   document.getElementById('profileEmail').textContent = userEmail;
-  
+
   if (userData.age) {
     document.getElementById('profileAge').textContent = `Age: ${userData.age}`;
   }
-  
-  // Pre-fill profile update form
-  document.getElementById('updateName').value = userName;
-  document.getElementById('updateEmail').value = userEmail;
+
+  if(document.getElementById('updateName')) document.getElementById('updateName').value = userName;
+  if(document.getElementById('updateEmail')) document.getElementById('updateEmail').value = userEmail;
 }
 
+// Load transactions from localStorage and rebuild data arrays
 function loadStoredData() {
   const storedTransactions = localStorage.getItem('transactions');
   if (storedTransactions) {
     transactions = JSON.parse(storedTransactions);
-    
-    // Rebuild data arrays from transactions
+
     incomeData = [];
     expenseData = [];
     categories = {
@@ -81,23 +74,30 @@ function loadStoredData() {
       'Healthcare': 0,
       'Other': 0
     };
-    
-    transactions.forEach(transaction => {
-      if (transaction.type === 'income') {
-        incomeData.push(transaction.amount);
-      } else {
-        expenseData.push(transaction.amount);
-        categories[transaction.category] += transaction.amount;
+
+    transactions.forEach(t => {
+      if (t.type === 'income') {
+        incomeData.push(t.amount);
+      } else if (t.type === 'expense') {
+        expenseData.push(t.amount);
+        if (categories.hasOwnProperty(t.category)) {
+          categories[t.category] += t.amount;
+        } else {
+          categories['Other'] += t.amount;
+        }
       }
     });
   }
 }
 
+// Add income/expense data from inputs
 function addData() {
   const income = parseFloat(incomeInput.value);
   const expense = parseFloat(expenseInput.value);
-  const category = categorySelect.value;
+  const category = categorySelect.value || 'Other';
   const timestamp = new Date().toISOString();
+
+  let added = false;
 
   if (!isNaN(income) && income > 0) {
     incomeData.push(income);
@@ -108,11 +108,16 @@ function addData() {
       date: timestamp,
       id: Date.now() + Math.random()
     });
+    added = true;
   }
 
   if (!isNaN(expense) && expense > 0) {
     expenseData.push(expense);
-    categories[category] += expense;
+    if (categories.hasOwnProperty(category)) {
+      categories[category] += expense;
+    } else {
+      categories['Other'] += expense;
+    }
     transactions.push({
       type: 'expense',
       amount: expense,
@@ -120,19 +125,20 @@ function addData() {
       date: timestamp,
       id: Date.now() + Math.random()
     });
+    added = true;
   }
 
-  // Save to localStorage
-  localStorage.setItem('transactions', JSON.stringify(transactions));
-
-  incomeInput.value = '';
-  expenseInput.value = '';
-
-  updateSummary();
-  updateCharts();
-  generateReport();
+  if (added) {
+    localStorage.setItem('transactions', JSON.stringify(transactions));
+    incomeInput.value = '';
+    expenseInput.value = '';
+    updateSummary();
+    updateCharts();
+    generateReport();
+  }
 }
 
+// Update income, expense, and balance summary UI
 function updateSummary() {
   const incomeTotal = incomeData.reduce((a, b) => a + b, 0);
   const expenseTotal = expenseData.reduce((a, b) => a + b, 0);
@@ -141,8 +147,7 @@ function updateSummary() {
   totalIncome.textContent = `$${incomeTotal.toFixed(2)}`;
   totalExpense.textContent = `$${expenseTotal.toFixed(2)}`;
   balance.textContent = `$${balanceAmount.toFixed(2)}`;
-  
-  // Color code the balance
+
   if (balanceAmount > 0) {
     balance.style.color = '#3eaf7c';
   } else if (balanceAmount < 0) {
@@ -152,19 +157,17 @@ function updateSummary() {
   }
 }
 
+// Update Bar, Line, and Pie charts with current data
 function updateCharts() {
   const labels = Array.from({ length: Math.max(incomeData.length, expenseData.length) }, (_, i) => `Entry ${i + 1}`);
-  const incomeTotal = incomeData.reduce((a, b) => a + b, 0);
-  const expenseTotal = expenseData.reduce((a, b) => a + b, 0);
+
   const incomeColor = '#3eaf7c';
   const expenseColor = '#e04f5f';
 
-  // Destroy existing charts
   if (barChart) barChart.destroy();
   if (lineChart) lineChart.destroy();
   if (pieChart) pieChart.destroy();
 
-  // Bar Chart
   const barCtx = document.getElementById('barChart').getContext('2d');
   barChart = new Chart(barCtx, {
     type: 'bar',
@@ -185,27 +188,14 @@ function updateCharts() {
     },
     options: {
       responsive: true,
-      plugins: {
-        legend: {
-          labels: {
-            color: '#fff'
-          }
-        }
-      },
+      plugins: { legend: { labels: { color: '#fff' } } },
       scales: {
-        x: {
-          ticks: { color: '#fff' },
-          grid: { color: '#333' }
-        },
-        y: {
-          ticks: { color: '#fff' },
-          grid: { color: '#333' }
-        }
+        x: { ticks: { color: '#fff' }, grid: { color: '#333' } },
+        y: { ticks: { color: '#fff' }, grid: { color: '#333' } }
       }
     }
   });
 
-  // Line Chart
   const lineCtx = document.getElementById('lineChart').getContext('2d');
   lineChart = new Chart(lineCtx, {
     type: 'line',
@@ -230,39 +220,25 @@ function updateCharts() {
     },
     options: {
       responsive: true,
-      plugins: {
-        legend: {
-          labels: {
-            color: '#fff'
-          }
-        }
-      },
+      plugins: { legend: { labels: { color: '#fff' } } },
       scales: {
-        x: {
-          ticks: { color: '#fff' },
-          grid: { color: '#333' }
-        },
-        y: {
-          ticks: { color: '#fff' },
-          grid: { color: '#333' }
-        }
+        x: { ticks: { color: '#fff' }, grid: { color: '#333' } },
+        y: { ticks: { color: '#fff' }, grid: { color: '#333' } }
       }
     }
   });
 
-  // Pie Chart for Categories
   const pieData = Object.entries(categories)
-    .filter(([category, amount]) => amount > 0)
-    .map(([category, amount]) => ({ category, amount }));
+    .filter(([, amount]) => amount > 0);
 
   if (pieData.length > 0) {
     const pieCtx = document.getElementById('pieChart').getContext('2d');
     pieChart = new Chart(pieCtx, {
       type: 'pie',
       data: {
-        labels: pieData.map(item => item.category),
+        labels: pieData.map(([cat]) => cat),
         datasets: [{
-          data: pieData.map(item => item.amount),
+          data: pieData.map(([, amt]) => amt),
           backgroundColor: [
             '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
             '#9966FF', '#FF9F40', '#FF6384'
@@ -272,177 +248,91 @@ function updateCharts() {
       },
       options: {
         responsive: true,
-        plugins: {
-          legend: {
-            labels: {
-              color: '#fff'
-            }
-          }
-        }
+        plugins: { legend: { labels: { color: '#fff' } } }
       }
     });
   }
 }
 
-// Section Management
-function showSection(sectionName) {
-  // Hide all sections
-  const sections = document.querySelectorAll('.section');
-  sections.forEach(section => section.classList.remove('active'));
-  
-  // Show selected section
-  document.getElementById(`${sectionName}-section`).classList.add('active');
-  
-  // Update navigation active state
-  const navItems = document.querySelectorAll('nav ul li a');
-  navItems.forEach(item => item.classList.remove('active'));
-}
-
-// Reports functionality
+// Generate report based on selected period
 function generateReport() {
   const period = document.getElementById('reportPeriod')?.value || 'all';
   const now = new Date();
   let filteredTransactions = transactions;
 
-  // Filter transactions based on period
-  switch(period) {
+  switch (period) {
     case 'week':
       const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       filteredTransactions = transactions.filter(t => new Date(t.date) >= weekAgo);
       break;
     case 'month':
-      const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
       filteredTransactions = transactions.filter(t => new Date(t.date) >= monthAgo);
       break;
     case 'year':
-      const yearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+      const yearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
       filteredTransactions = transactions.filter(t => new Date(t.date) >= yearAgo);
       break;
   }
 
-  // Calculate totals
-  const reportIncome = filteredTransactions
-    .filter(t => t.type === 'income')
-    .reduce((sum, t) => sum + t.amount, 0);
-  
-  const reportExpenses = filteredTransactions
-    .filter(t => t.type === 'expense')
-    .reduce((sum, t) => sum + t.amount, 0);
+  const tbody = document.querySelector('#reportTable tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
 
-  // Update report display
-  if (document.getElementById('reportIncome')) {
-    document.getElementById('reportIncome').textContent = `$${reportIncome.toFixed(2)}`;
-    document.getElementById('reportExpenses').textContent = `$${reportExpenses.toFixed(2)}`;
-    document.getElementById('reportSavings').textContent = `$${(reportIncome - reportExpenses).toFixed(2)}`;
-  }
+  filteredTransactions.forEach(t => {
+    const tr = document.createElement('tr');
 
-  // Update transactions list
-  updateTransactionsList(filteredTransactions);
+    const typeTd = document.createElement('td');
+    typeTd.textContent = t.type.charAt(0).toUpperCase() + t.type.slice(1);
+    tr.appendChild(typeTd);
+
+    const categoryTd = document.createElement('td');
+    categoryTd.textContent = t.category;
+    tr.appendChild(categoryTd);
+
+    const amountTd = document.createElement('td');
+    amountTd.textContent = `$${t.amount.toFixed(2)}`;
+    tr.appendChild(amountTd);
+
+    const dateTd = document.createElement('td');
+    dateTd.textContent = new Date(t.date).toLocaleString();
+    tr.appendChild(dateTd);
+
+    tbody.appendChild(tr);
+  });
 }
 
-function updateTransactionsList(transactionList) {
-  const transactionsList = document.getElementById('transactionsList');
-  if (!transactionsList) return;
+function checkTemporaryAccess() {
+  if (sessionStorage.getItem('tempDashboardAccess') === 'granted') {
+    alert('You have temporary dashboard access; some features are disabled.');
 
-  if (transactionList.length === 0) {
-    transactionsList.innerHTML = '<p>No transactions for this period.</p>';
-    return;
+    document.querySelectorAll('.sensitive-feature').forEach(elem => {
+      elem.disabled = true;
+      elem.style.opacity = '0.5';
+    });
   }
+}
 
-  const sortedTransactions = transactionList
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 10); // Show last 10 transactions
+function setupReportPeriodListener() {
+  const reportPeriodSelect = document.getElementById('reportPeriod');
+  if (reportPeriodSelect) {
+    reportPeriodSelect.addEventListener('change', generateReport);
+  }
+}
 
-  transactionsList.innerHTML = sortedTransactions.map(transaction => `
-    <div class="transaction-item">
-      <div>
-        <span class="transaction-type ${transaction.type}">${transaction.type.toUpperCase()}</span>
-        <span>${transaction.category}</span>
-      </div>
-      <div>
-        <strong>$${transaction.amount.toFixed(2)}</strong>
-        <small>${new Date(transaction.date).toLocaleDateString()}</small>
-      </div>
-    </div>
-  `).join('');
+function setupAddDataListener() {
+  const addDataBtn = document.getElementById('addDataBtn');
+  if (addDataBtn) {
+    addDataBtn.addEventListener('click', addData);
+  }
+}
+
+function switchSection(sectionId) {
+  document.querySelectorAll('section').forEach(s => {
+    s.style.display = s.id === sectionId ? 'block' : 'none';
+  });
 }
 
 function exportReport() {
-  alert('Export functionality would be implemented with a PDF library in a real application.');
-}
-
-// Settings functionality
-function clearAllData() {
-  if (confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
-    localStorage.removeItem('transactions');
-    incomeData = [];
-    expenseData = [];
-    transactions = [];
-    categories = {
-      'Food': 0,
-      'Transportation': 0,
-      'Entertainment': 0,
-      'Shopping': 0,
-      'Bills': 0,
-      'Healthcare': 0,
-      'Other': 0
-    };
-    
-    updateSummary();
-    updateCharts();
-    generateReport();
-    alert('All data has been cleared.');
-  }
-}
-
-function exportData() {
-  const dataToExport = {
-    transactions,
-    userData: JSON.parse(localStorage.getItem('userData') || '{}'),
-    exportDate: new Date().toISOString()
-  };
-  
-  const dataStr = JSON.stringify(dataToExport, null, 2);
-  const dataBlob = new Blob([dataStr], {type: 'application/json'});
-  
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(dataBlob);
-  link.download = 'expense-tracker-data.json';
-  link.click();
-}
-
-// Profile functionality
-function updateProfile() {
-  const newName = document.getElementById('updateName').value.trim();
-  const newEmail = document.getElementById('updateEmail').value.trim();
-  
-  if (!newName || !newEmail) {
-    alert('Please fill in all fields.');
-    return;
-  }
-  
-  // Update stored user data
-  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-  userData.name = newName;
-  userData.email = newEmail;
-  localStorage.setItem('userData', JSON.stringify(userData));
-  
-  // Update current user data
-  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-  currentUser.email = newEmail;
-  localStorage.setItem('currentUser', JSON.stringify(currentUser));
-  
-  // Reload user data
-  loadUserData();
-  
-  alert('Profile updated successfully!');
-}
-
-// Logout functionality
-function logout() {
-  if (confirm('Are you sure you want to logout?')) {
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('currentUser');
-    window.location.href = "../login/login.html";
-  }
+  alert("Export report functionality to be implemented.");
 }

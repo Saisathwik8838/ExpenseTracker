@@ -1,178 +1,96 @@
-// login.js - Updated with backend integration
 const API_BASE_URL = 'http://localhost:3000/api';
 
-document.getElementById('loginForm').addEventListener('submit', async function(e) {
-  e.preventDefault();
+document.addEventListener('DOMContentLoaded', function() {
+    // Check for existing session
+    if (checkAuth()) {
+        redirectToDashboard();
+    }
 
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value.trim();
-
-  if (!email || !password) {
-    showError("Please fill out both fields.");
-    return;
-  }
-
-  // Basic email validation
-  if (!isValidEmail(email)) {
-    showError("Please enter a valid email address.");
-    return;
-  }
-
-  // Show loading state
-  const submitButton = document.querySelector('button[type="submit"]');
-  const originalText = submitButton.textContent;
-  submitButton.textContent = 'Logging in...';
-  submitButton.disabled = true;
-
-  try {
-    // Call backend login API
-    const response = await fetch(`${API_BASE_URL}/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: email,
-        password: password
-      })
+    // Forgot Password Link
+    document.getElementById('forgot-password').addEventListener('click', function(e) {
+        e.preventDefault();
+        handleForgotPassword();
     });
 
-    const data = await response.json();
-
-    if (response.ok) {
-      // Login successful
-      console.log("Login successful:", data);
-      
-      // Store user data in localStorage
-      const userData = {
-        ...data.user,
-        loginTime: new Date().toISOString(),
-        isLoggedIn: true
-      };
-
-      localStorage.setItem('currentUser', JSON.stringify(userData));
-      localStorage.setItem('isLoggedIn', 'true');
-
-      // Show success message
-      showSuccess("Login successful! Redirecting to dashboard...");
-
-      // Redirect based on user type
-      setTimeout(() => {
-        if (userData.isMinor) {
-          window.location.href = "../dashboard/dashboard.html";
-        } else {
-          // Adult user - check if they have children to manage
-          window.location.href = "../dashboard/dashboard.html";
-        }
-      }, 1500);
-
-    } else {
-      // Login failed
-      console.error("Login failed:", data);
-      showError(data.error || data.message || "Login failed. Please try again.");
-    }
-
-  } catch (error) {
-    console.error("Login error:", error);
-    showError("Network error. Please check your connection and try again.");
-  } finally {
-    // Reset button state
-    submitButton.textContent = originalText;
-    submitButton.disabled = false;
-  }
+    // Login Form
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        await handleLogin();
+    });
 });
 
-function isValidEmail(email) {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
+// Handle Login
+async function handleLogin() {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    if (!email || !password) {
+        showError("Please fill in all fields");
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.message || "Login failed");
+
+        // Successful login
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        redirectToDashboard();
+
+    } catch (error) {
+        showError(error.message);
+    }
 }
 
-function showError(message) {
-  const form = document.getElementById('loginForm');
-  const existingMessage = document.querySelector('.message');
-  
-  if (existingMessage) {
-    existingMessage.remove();
-  }
-  
-  const messageDiv = document.createElement('div');
-  messageDiv.className = 'message error-message';
-  messageDiv.textContent = message;
-  messageDiv.style.cssText = `
-    color: #ff6b6b;
-    fontSize: 14px;
-    marginTop: 15px;
-    textAlign: center;
-    padding: 10px;
-    backgroundColor: rgba(255, 107, 107, 0.1);
-    borderRadius: 6px;
-    border: 1px solid rgba(255, 107, 107, 0.3);
-  `;
-  
-  form.appendChild(messageDiv);
-  
-  // Auto-remove error after 5 seconds
-  setTimeout(() => {
-    if (messageDiv.parentNode) {
-      messageDiv.remove();
+// Handle Forgot Password → Temporary Dashboard Access
+async function handleForgotPassword() {
+    const email = prompt("Enter your email for verification:");
+    if (!email) return;
+
+    try {
+        // In production: Send email with verification link
+        // For demo: Grant immediate temporary access
+        localStorage.setItem('tempAccess', 'true');
+        showSuccess("Temporary access granted. Redirecting...");
+        
+        setTimeout(() => {
+            redirectToDashboard();
+        }, 1500);
+
+    } catch (error) {
+        showError("Could not process your request");
     }
-  }, 5000);
+}
+
+// Redirect to Dashboard
+function redirectToDashboard() {
+    window.location.href = '/frontend/dashboard/dashboard.html';
+}
+
+// Auth Check
+function checkAuth() {
+    return localStorage.getItem('authToken') || localStorage.getItem('tempAccess');
+}
+
+// UI Helpers
+function showError(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.textContent = message;
+    document.getElementById('loginForm').appendChild(errorDiv);
 }
 
 function showSuccess(message) {
-  const form = document.getElementById('loginForm');
-  const existingMessage = document.querySelector('.message');
-  
-  if (existingMessage) {
-    existingMessage.remove();
-  }
-  
-  const messageDiv = document.createElement('div');
-  messageDiv.className = 'message success-message';
-  messageDiv.textContent = message;
-  messageDiv.style.cssText = `
-    color: #4caf50;
-    fontSize: 14px;
-    marginTop: 15px;
-    textAlign: center;
-    padding: 10px;
-    backgroundColor: rgba(76, 175, 80, 0.1);
-    borderRadius: 6px;
-    border: 1px solid rgba(76, 175, 80, 0.3);
-  `;
-  
-  form.appendChild(messageDiv);
+    const successDiv = document.createElement('div');
+    successDiv.className = 'success-message';
+    successDiv.textContent = message;
+    document.getElementById('loginForm').appendChild(successDiv);
 }
-
-// Check if user is already logged in
-window.addEventListener('load', function() {
-  const isLoggedIn = localStorage.getItem('isLoggedIn');
-  
-  if (isLoggedIn === 'true') {
-    const userData = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    if (userData.isMinor) {
-      window.location.href = "../dashboard/dashboard.html";
-    } else {
-      window.location.href = "../dashboard/dashboard.html";
-    }
-  }
-});
-
-// Test backend connection on page load
-async function testBackendConnection() {
-  try {
-    const response = await fetch(`${API_BASE_URL}/health`);
-    if (response.ok) {
-      console.log("✅ Backend connection successful");
-    } else {
-      console.warn("⚠️ Backend health check failed");
-    }
-  } catch (error) {
-    console.error("❌ Backend connection failed:", error);
-    showError("Unable to connect to server. Please try again later.");
-  }
-}
-
-// Test connection when page loads
-testBackendConnection();
-
